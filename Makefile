@@ -8,7 +8,7 @@ run: $(NAME)
 
 all: $(NAME)
 
-./bin/%.o: ./src/%.cpp
+./bin/%.o: ./src/%.cpp | bin
 	g++ -c $(CFLAGS) -I ./include $< -o $@
 
 $(NAME): ${OBJS}
@@ -19,5 +19,8 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
+
+bin:
+	mkdir -p bin
 
 re: fclean all

@@ -171,16 +171,10 @@ void game::start()
 
 		force::gravity(knight_info, clk.get_df());
 
-		knight_info.vel_x *= force::fric_x(knight_info, 0.5f) * std::max(coll::resolve_slope_x(knight_info, tmap, clk.get_df()), coll::resolve_x(knight_info, tmap, clk.get_df()));
+		knight_info.vel_x *= force::fric_x(knight_info, 0.5f) * coll::resolve_x(knight_info, tmap, clk.get_df());
 		knight_info.x += knight_info.vel_x * clk.get_df();
 
-		float res_y = coll::resolve_y(knight_info, tmap, clk.get_df());
-		float res_down_slope_y = coll::resolve_slope_down_y(knight_info, tmap, clk.get_df());
-
-		if(knight_info.dir == -1 && res_down_slope_y != 0.0f) res_y = res_down_slope_y;
-		else res_y = std::min(res_y, coll::resolve_slope_y(knight_info, tmap, clk.get_df()));
-
-		knight_info.vel_y *= force::fric_y(knight_info, 0.8f) * res_y;
+		knight_info.vel_y *= force::fric_y(knight_info, 0.8f) * coll::resolve_y(knight_info, tmap, clk.get_df());
 		knight_info.y += knight_info.vel_y * clk.get_df();
 
 		knight_info.vel_y *= !((knight_info.state & entity_state::GROUNDED) == entity_state::GROUNDED);
