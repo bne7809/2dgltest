@@ -83,4 +83,4 @@ struct dyn_entity : public entity_base, public entity_pos, public entity_trans, 
 
 #define BIT_ON(flag, pos)	((flag) |= (1 << (pos)))
 #define BIT_OFF(flag, pos)	((flag) &= ~(1 << (pos)))
-#define IS_BIT(flag, pos)	(((flag) & (1 << (pos))) == (1 << (pos)))
+#define IS_BIT(flag, pos)	(((flag) >> (pos)) & 1)
