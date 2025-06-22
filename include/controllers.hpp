@@ -1,9 +1,9 @@
 #pragma once
 
 #include "cmd_buff.hpp"
-#include <SDL2/SDL_events.h>
+#include <GLFW/glfw3.h>
 
 namespace cntrl
 {
-	bool mv_cmds(const Uint8 *key_states, cmd_buff& buff);
+	void mv_cmds(GLFWwindow *window, cmd_buff& buff);
 }

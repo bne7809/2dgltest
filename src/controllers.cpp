@@ -2,35 +2,28 @@
 
 namespace cntrl
 {
-	bool mv_cmds(const Uint8 *key_states, cmd_buff& buff)
+	void mv_cmds(GLFWwindow* window, cmd_buff& buff)
 	{
-		SDL_Event e;
-		while(SDL_PollEvent(&e))
-		{
-			if(e.type == SDL_QUIT) {
-				return false;
-			} else if(e.type == SDL_KEYUP) {
-				switch(e.key.keysym.sym)
-				{
-				case SDLK_a:
-					buff.push(entity_cmd::ST_LEFT);
-					break;
-				case SDLK_d:
-					buff.push(entity_cmd::ST_RIGHT);
-					break;
-				case SDLK_k:
-					buff.push(entity_cmd::ST_JUMP);
-					break;
-				}
-			}
-		}
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 
-		if(key_states[SDL_SCANCODE_A]) buff.push(entity_cmd::MV_LEFT);
-		if(key_states[SDL_SCANCODE_D]) buff.push(entity_cmd::MV_RIGHT);
-		if(key_states[SDL_SCANCODE_K]) buff.push(entity_cmd::MV_JUMP);
-		if(key_states[SDL_SCANCODE_J]) buff.push(entity_cmd::TR_FIRE);
-		if(key_states[SDL_SCANCODE_L]) buff.push(entity_cmd::MV_ROLL);
+		auto keyA = glfwGetKey(window, GLFW_KEY_A);
+		if (keyA == GLFW_PRESS)
+			buff.push(entity_cmd::MV_LEFT);
+		else if (keyA == GLFW_RELEASE)
+			buff.push(entity_cmd::ST_LEFT);
 
-		return true;
+		auto keyD = glfwGetKey(window, GLFW_KEY_D);
+		if (keyD == GLFW_PRESS)
+			buff.push(entity_cmd::MV_RIGHT);
+		else if (keyD == GLFW_RELEASE)
+			buff.push(entity_cmd::ST_RIGHT);
+
+		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+			buff.push(entity_cmd::MV_JUMP);
+		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+			buff.push(entity_cmd::TR_FIRE);
+		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+			buff.push(entity_cmd::MV_ROLL);
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils.hpp"
+#include <glad/glad.h>
 
 class shader
 {

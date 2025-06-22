@@ -1,10 +1,28 @@
 #include "utils.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 namespace util
 {
 	void tex_create(const char *img, GLuint *tex)
 	{
-		SDL_Surface *img_surf = IMG_Load(img);
+		int width, height, nrChannels;
+
+		stbi_set_flip_vertically_on_load(0);
+
+		unsigned char *data = stbi_load(img, &width, &height, &nrChannels, 0);
+		if (!data) {
+			fprintf(stderr, "Failed to load texture: %s\n", img);
+			return ;
+		}
+
+		GLenum format = GL_RGB;
+		if (nrChannels == 1)
+			format = GL_RED;
+		else if (nrChannels == 3)
+			format = GL_RGB;
+		else if (nrChannels == 4)
+			format = GL_RGBA;
 
 		glGenTextures(1, tex);
 		glBindTexture(GL_TEXTURE_2D, *tex);
@@ -14,10 +32,10 @@ namespace util
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_surf->w, img_surf->h, 0, GL_BGRA, GL_UNSIGNED_BYTE, img_surf->pixels);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		
-		SDL_FreeSurface(img_surf);
+
+		stbi_image_free(data);
 	}
 }

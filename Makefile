@@ -1,6 +1,6 @@
 SRCS = $(wildcard ./src/*.cpp)
 OBJS = $(SRCS:./src%.cpp=./bin%.o)
-CFLAGS = -Wall -Wextra -Werror -std=c++20
+CFLAGS = -Wall -Wextra -Werror
 NAME = 2dtest
 
 run: $(NAME)
@@ -9,13 +9,17 @@ run: $(NAME)
 all: $(NAME)
 
 ./bin/%.o: ./src/%.cpp | bin
-	g++ -c $(CFLAGS) -I ./include $< -o $@
+	clang++ -c $(CFLAGS) -fno-exceptions -std=c++20 -DGL_SILENCE_DEPRECATION -I ./include $< -o $@
 
-$(NAME): ${OBJS}
-	g++ ${OBJS} -rpath /usr/local/lib -lSDL2main -lSDL2 -lSDL2_image -framework OpenGL -o $(NAME) 
+./bin/glad.o: ./src/glad.c
+	clang -c $(CFLAGS) $< -o $@
+
+$(NAME): ${OBJS} ./bin/glad.o
+	clang++ ${OBJS} ./bin/glad.o -lglfw.3 -framework OpenGL -o $(NAME) 
+	install_name_tool -add_rpath /usr/local/lib ./$(NAME)
 
 clean:
-	rm -f ${OBJS}
+	rm -f ${OBJS} ./bin/glad.o
 
 fclean: clean
 	rm -f $(NAME)

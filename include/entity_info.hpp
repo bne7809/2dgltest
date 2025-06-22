@@ -39,19 +39,13 @@ struct anim_data
 
 namespace entity_state
 {
-	constexpr unsigned int GROUNDED	= 0;
-	constexpr unsigned int MV_RIGHT = 1;
-	constexpr unsigned int MV_LEFT	= 2;
-	constexpr unsigned int ILOCK	= 3;
-	constexpr unsigned int JMP		= 4;
-	constexpr unsigned int DBJUMP	= 5;
-	constexpr unsigned int COLLX	= 6;
-	constexpr unsigned int WLJMP	= 7;
+	constexpr unsigned int MV_RIGHT = 0;
+	constexpr unsigned int MV_LEFT	= 1;
+	constexpr unsigned int X_DIR	= 2;
 }
 
 struct entity_base
 {
-	unsigned int id;
 	unsigned int state;
 };
 
@@ -78,6 +72,10 @@ struct entity_bound
 	float h;
 };
 
+struct stat_entity : public entity_base, public entity_pos, public entity_bound
+{
+};
+
 struct dyn_entity : public entity_base, public entity_pos, public entity_trans, public entity_bound
 {
 	anim_type anim;
@@ -85,3 +83,4 @@ struct dyn_entity : public entity_base, public entity_pos, public entity_trans, 
 
 #define BIT_ON(flag, pos)	((flag) |= (1 << (pos)))
 #define BIT_OFF(flag, pos)	((flag) &= ~(1 << (pos)))
+#define IS_BIT(flag, pos)	(((flag) & (1 << (pos))) == (1 << (pos)))
