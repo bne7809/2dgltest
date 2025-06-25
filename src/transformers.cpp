@@ -5,10 +5,16 @@ namespace trans
 	bool archer(dyn_entity &out, entity_cmd curr_cmd)
 	{
 		if(curr_cmd == entity_cmd::MV_RIGHT)
+		{
 			BIT_ON(out.state, entity_state::MV_RIGHT);
+			BIT_OFF(out.state, entity_state::X_DIR);
+		}
 		
 		if(curr_cmd == entity_cmd::MV_LEFT)
+		{
 			BIT_ON(out.state, entity_state::MV_LEFT);
+			BIT_ON(out.state, entity_state::X_DIR);
+		}
 
 		if(curr_cmd == entity_cmd::ST_RIGHT)
 			BIT_OFF(out.state, entity_state::MV_RIGHT);

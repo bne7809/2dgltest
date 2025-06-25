@@ -113,25 +113,21 @@ void game::start()
 
 		if (IS_BIT(knight_info.state, entity_state::MV_RIGHT) && IS_BIT(knight_info.state, entity_state::MV_LEFT))
 			knight_info.vx = 0.0f;
-		else if (IS_BIT(knight_info.state, entity_state::MV_RIGHT)) {
+		else if (IS_BIT(knight_info.state, entity_state::MV_RIGHT))
 			knight_info.vx = knight_info.ax;
-			BIT_OFF(knight_info.state, entity_state::X_DIR);
-		}
-		else if (IS_BIT(knight_info.state, entity_state::MV_LEFT)) {
+		else if (IS_BIT(knight_info.state, entity_state::MV_LEFT))
 			knight_info.vx = -knight_info.ax;
-			BIT_ON(knight_info.state, entity_state::X_DIR);
-		}
 		else {
 			knight_info.vx = 0.0f;
 		}
-
-		knight_info.x += knight_info.vx * clk.get_df();
 
 		if(!IS_BIT(knight_info.state, entity_state::ILOCK))
 			state_anim::archer(knight_info);
 
 		knight_anim.set_anim(anim_conv::knight(knight_info.anim));
 		knight_anim.update(clk.get_dt());
+
+		knight_info.x += knight_info.vx * clk.get_df();
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
