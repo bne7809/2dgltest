@@ -42,6 +42,7 @@ namespace entity_state
 	constexpr unsigned int MV_RIGHT = 0;
 	constexpr unsigned int MV_LEFT	= 1;
 	constexpr unsigned int X_DIR	= 2;
+	constexpr unsigned int ILOCK	= 3;
 }
 
 struct entity_base

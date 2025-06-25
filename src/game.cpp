@@ -65,7 +65,6 @@ void game::start()
 	cmd_buff cmds;
 
 	shader anim_prog("shaders/anim_sprite.vs", "shaders/anim_sprite.fs");
-	shader tile_prog("shaders/tiles.vs", "shaders/anim_sprite.fs");
 	
 	dyn_entity knight_info;
 	knight_info.state = 0;
@@ -94,10 +93,20 @@ void game::start()
 
 		clk.tick();
 
-		for(int i = 0; i < cmds.num_cmds(); i++)
+		if (knight_anim.loop_done())
 		{
-			if(trans::archer(knight_info, cmds.get_cmd(i)))
-				break;
+			BIT_OFF(knight_info.state, entity_state::ILOCK);
+			BIT_OFF(knight_info.state, entity_state::MV_LEFT);
+			BIT_OFF(knight_info.state, entity_state::MV_RIGHT);
+		}
+
+		if (!IS_BIT(knight_info.state, entity_state::ILOCK))
+		{
+			for(int i = 0; i < cmds.num_cmds(); i++)
+			{
+				if(trans::archer(knight_info, cmds.get_cmd(i)))
+					break;
+			}
 		}
 
 		cmds.clear();
@@ -118,14 +127,13 @@ void game::start()
 
 		knight_info.x += knight_info.vx * clk.get_df();
 
-		state_anim::archer(knight_info);
+		if(!IS_BIT(knight_info.state, entity_state::ILOCK))
+			state_anim::archer(knight_info);
 
 		knight_anim.set_anim(anim_conv::knight(knight_info.anim));
 		knight_anim.update(clk.get_dt());
 
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		tile_prog.bind();
 
 		anim_prog.bind();
 		int dir = !IS_BIT(knight_info.state, entity_state::X_DIR) - IS_BIT(knight_info.state, entity_state::X_DIR);
