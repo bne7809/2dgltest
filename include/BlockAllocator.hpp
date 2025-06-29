@@ -27,7 +27,20 @@ private:
 	{
 		return *reinterpret_cast<void**>(ptr);
 	}
-public:
+
+	void dealloc(T* m)
+	{
+		size_t chunk_index = (reinterpret_cast<unsigned char*>(m) - chunks[0].mem) / BlockSize;
+		curr = chunk_index;
+		Chunk &c = chunks[chunk_index];
+		size_t i = (reinterpret_cast<unsigned char*>(m) - c.mem) / Stride;
+		if(!c.used.test(i)) return;
+		c.used.reset(i);
+		getNextPtr(m) = c.first;
+		c.first = m;
+		should_comp.set(chunk_index);
+	}
+protected:
 	BlockAllocator() : curr(0)
 	{
 		for(size_t i = 0; i < NumChunks; ++i)
@@ -51,24 +64,11 @@ public:
 				void *ret = c.first;
 				c.first = getNextPtr(c.first);
 				c.used.set((static_cast<unsigned char*>(ret) - c.mem) / Stride);
-				return ret;
+				return static_cast<T*>(ret);
 			}
 			curr = (curr + 1) % NumChunks;
 		}
 		return nullptr;
-	}
-
-	void dealloc(T* m)
-	{
-		size_t chunk_index = (static_cast<unsigned char*>(m) - chunks[0].mem) / BlockSize;
-		curr = chunk_index;
-		Chunk &c = chunks[chunk_index];
-		size_t i = (static_cast<unsigned char*>(m) - c.mem) / Stride;
-		if(!c.used.test(i)) return;
-		c.used.reset(i);
-		getNextPtr(m) = c.first;
-		c.first = m;
-		should_comp.set(chunk_index);
 	}
 
 	void compact()
@@ -115,8 +115,8 @@ public:
 		}
 	}
 
-	template <typename F>
-	void for_each(F&& f)
+	template <typename F, typename K>
+	void update_del_if(F&& f, K&& k)
 	{
 		for(size_t i = 0; i < NumChunks; ++i)
 		{
@@ -124,7 +124,12 @@ public:
 			size_t count = c.used.count();
 
 			for(size_t j = 0; j < count; ++j)
-				f(*reinterpret_cast<T*>(c.mem + j * Stride));
+			{
+				T& t = *reinterpret_cast<T*>(c.mem + j * Stride);
+				f(t);
+				if(k(t))
+					dealloc(&t);
+			}
 		}
 	}
 };
