@@ -104,7 +104,7 @@ void game::start()
 		{
 			for(int i = 0; i < cmds.num_cmds(); i++)
 			{
-				if(trans::archer(knight_info, cmds.get_cmd(i)))
+				if(trans::knight(knight_info, cmds.get_cmd(i)))
 					break;
 			}
 		}
@@ -122,7 +122,7 @@ void game::start()
 		}
 
 		if(!IS_BIT(knight_info.state, entity_state::ILOCK))
-			state_anim::archer(knight_info);
+			state_anim::knight(knight_info);
 
 		knight_anim.set_anim(anim_conv::knight(knight_info.anim));
 		knight_anim.update(clk.get_dt());

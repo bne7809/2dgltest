@@ -4,5 +4,5 @@
 
 namespace state_anim
 {
-	void archer(dyn_entity& out);
+	void knight(dyn_entity& out);
 }

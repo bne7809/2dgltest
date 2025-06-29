@@ -6,29 +6,6 @@ anim_entity::anim_entity(const anim_data *data, int num_x)
 {
 }
 
-//void anim_entity::update(int dt)
-//{
-	//if (m_time > m_data[curr_anim].delay)
-	//{
-		//m_curr_frame++;
-		//if (m_curr_frame > m_data[curr_anim].end)
-		//{
-			//if(next_anim == curr_anim)
-				//m_curr_frame = m_data[next_anim].start;
-			//else
-				//m_curr_frame = m_data[curr_anim].end;
-//
-			//if(m_data[curr_anim].tr != nullptr) m_data[curr_anim].tr(this);
-//
-			//m_loop_done = 1;
-			//if(next_anim != -1) curr_anim = next_anim;
-		//}
-		//m_time = 0;
-	//} else {
-		//m_time += dt;
-	//}
-//}
-
 void anim_entity::update(int dt)
 {
 	if (m_time > m_data[curr_anim].delay && !m_loop_done)
