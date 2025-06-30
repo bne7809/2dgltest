@@ -34,11 +34,56 @@ private:
 		curr = chunk_index;
 		Chunk &c = chunks[chunk_index];
 		size_t i = (reinterpret_cast<unsigned char*>(m) - c.mem) / Stride;
-		if(!c.used.test(i)) return;
-		c.used.reset(i);
+		c.used[i] = 0;
 		getNextPtr(m) = c.first;
 		c.first = m;
-		should_comp.set(chunk_index);
+		should_comp[chunk_index] = 1;
+	}
+
+	void compact()
+	{
+		if(should_comp.none())
+			return;
+		for(size_t i = 0; i < NumChunks; ++i)
+		{
+			if(should_comp[i])
+			{
+				Chunk &c = chunks[i];
+
+				size_t back = CountPerChunk - 1;
+
+				for(size_t front = 0; front < back; ++front)
+				{
+					if(!c.used[front])
+					{
+						while(back > front && !c.used[back])
+							--back;
+
+						if(back <= front) break;
+
+						std::memcpy(c.mem + front * Stride, c.mem + back * Stride, Stride);
+
+						c.used[front] = 1;
+						c.used[back] = 0;
+
+						--back;
+					}
+				}
+
+				++back;
+
+				unsigned char *off = c.mem + back * Stride;
+
+				c.first = off;
+
+				for(size_t j = back; j < CountPerChunk - 1; ++j)
+					*reinterpret_cast<void**>(off) = reinterpret_cast<void*>(off += Stride);
+
+				getNextPtr(off) = nullptr;
+
+				should_comp[i] = 0;
+			}
+		}
 	}
 protected:
 	BlockAllocator() : curr(0)
@@ -63,7 +108,7 @@ protected:
 			{
 				void *ret = c.first;
 				c.first = getNextPtr(c.first);
-				c.used.set((static_cast<unsigned char*>(ret) - c.mem) / Stride);
+				c.used[(static_cast<unsigned char*>(ret) - c.mem) / Stride] = 1;
 				return static_cast<T*>(ret);
 			}
 			curr = (curr + 1) % NumChunks;
@@ -71,50 +116,7 @@ protected:
 		return nullptr;
 	}
 
-	void compact()
-	{
-		if(should_comp.none())
-			return;
-		for(size_t i = 0; i < NumChunks; ++i)
-		{
-			if(should_comp.test(i))
-			{
-				size_t active = 0;
-				size_t last_used = 0;
-				bool scattered = false;
-
-				Chunk &c = chunks[i];
-				for(size_t j = 0; j < CountPerChunk; ++j)
-				{
-					if(c.used.test(j))
-					{
-						if(j != active)
-						{
-							c.used.reset(j);
-							c.used.set(active);
-							*reinterpret_cast<T*>(c.mem + active * Stride) = *reinterpret_cast<T*>(c.mem + j * Stride);
-						}
-						++active;
-						if (j - last_used > 1)
-							scattered = true;
-						last_used = j;
-					}
-				}
-
-				if(scattered)
-				{
-					unsigned char *off = c.mem + active * Stride;
-					c.first = off;
-					for(size_t j = active; j < CountPerChunk - 1; ++j)
-						*reinterpret_cast<void**>(off) = reinterpret_cast<void*>(off += Stride);
-					getNextPtr(off) = nullptr;
-				}
-
-				should_comp.reset(i);
-			}
-		}
-	}
-
+	
 	template <typename F, typename K>
 	void update_del_if(F&& f, K&& k)
 	{
@@ -131,5 +133,6 @@ protected:
 					dealloc(&t);
 			}
 		}
+		compact();
 	}
 };

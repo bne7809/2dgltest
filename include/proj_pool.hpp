@@ -1,6 +1,8 @@
 #pragma once
 
 #include "BlockAllocator.hpp"
+#include "shader.hpp"
+#include <glm/glm.hpp>
 
 struct proj_data
 {
@@ -16,9 +18,31 @@ struct proj_data
 	int delay;
 };
 
-class proj_pool : public BlockAllocator<proj_data, 64, 8>
+constexpr size_t CPC = 64;
+constexpr size_t NC = 8;
+
+class proj_pool : public BlockAllocator<proj_data, CPC, NC>
 {
+private:
+	struct inst_data
+	{
+		glm::vec4 pos_tex;
+		float x_flip;
+	};
+
+	inst_data inst[CPC * NC];
+	size_t num_inst;
+
+	GLuint m_tex;
+	GLuint m_vao;
+	GLuint m_vbo[2];
+
+	const float m_fracw;
+	const float m_frach;
 public:
+	proj_pool(const char *file, int num_x, int num_y, int rwidth, int rheight);
+
 	void create_proj(float x, float y, float vx, float vy, int row, int start, int end, int delay);
 	void update(int dt, float df);
+	void render(shader &s);
 };
