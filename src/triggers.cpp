@@ -10,12 +10,12 @@ namespace trigger
 	{
 		g_links.m_data.from = from;
 
-		g_links.m_data.fdata1 = 600.0f;
+		g_links.m_data.fdata1 = 200.0f;
 		g_links.m_data.fdata2 = 0.0f;
-		g_links.m_data.idata1 = 4;
+		g_links.m_data.idata1 = 1;
 		g_links.m_data.idata2 = 0;
 		g_links.m_data.idata3 = 7;
-		g_links.m_data.idata4 = 100;
+		g_links.m_data.idata4 = 100000;
 		g_links.m_data.call_inst = F1VXF2VYI1RI2SI3EI4D_SEINF_FPRJCR;
 
 		g_links.exec();
@@ -57,7 +57,7 @@ namespace trigger
 
 			out_func->create_proj(in_data->x + in_data->off_x +
 								(dir == 1) * in_data->w / 2.0f + (dir == -1) * (-70.0f),
-								in_data->y + in_data->off_y + 20.0f,
+								in_data->y + in_data->off_y - 70.0f,
 							    dir * m_data.fdata1, m_data.fdata2, m_data.idata1,
 								m_data.idata2, m_data.idata3, m_data.idata4);
 		}

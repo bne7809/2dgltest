@@ -87,7 +87,7 @@ void game::start()
 	anim_entity knight_anim(s_knight_data, 10);
 	sprite_sheet knight_sprite("res/HeroKnight.png", 10, 9, 160, 88);
 
-	proj_pool pool("res/proj_test.png", 8, 5, 80, 10);
+	proj_pool pool("res/proj_test.png", 8, 5, 144, 144);
 
 	trigger::g_links.add(&knight_anim, &knight_info);
 	trigger::g_links.add(&knight_anim, &pool);

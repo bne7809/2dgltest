@@ -91,8 +91,11 @@ void proj_pool::update(int dt, float df)
 				if(data.y < 0.0f || data.y >= 720.0f)
 					return true;
 
-				ptr[i].pos_tex = glm::vec4(data.x, data.y, data.frame * fracw, data.row * frach);
-				ptr[i].x_flip = fracw * (data.vx < 0.0f);
+				ptr[i].x = data.x;
+				ptr[i].y = data.y;
+				ptr[i].u = data.frame * fracw;
+				ptr[i].v = data.row * frach;
+				ptr[i].flip = fracw * (data.vx < 0.0f);
 
 				++i;
 

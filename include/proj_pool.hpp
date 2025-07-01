@@ -28,9 +28,14 @@ class proj_pool : public BlockAllocator<proj_data, CPC, NC>
 private:
 	struct inst_data
 	{
-		glm::vec4 pos_tex;
-		float x_flip;
+		float x;
+		float y;
+		float u;
+		float v;
+		float flip;
 	};
+
+	static_assert(sizeof(inst_data) == 5 * sizeof(float));
 
 	inst_data inst[CPC * NC];
 	size_t num_inst;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <bitset>
-#include <iostream>
 
 template <typename T, size_t CountPerChunk, size_t NumChunks>
 class BlockAllocator {
@@ -10,23 +9,15 @@ private:
 	static_assert(std::is_trivially_copyable_v<T>, "T copy");
 
 	static constexpr size_t Stride = sizeof(T);
-	static constexpr size_t Total = CountPerChunk * NumChunks;
-	static constexpr size_t BlockSize = Stride * CountPerChunk;
 
 	struct Chunk
 	{
-		void *first;
-		alignas(T) unsigned char mem[Stride * CountPerChunk];
 		std::bitset<CountPerChunk> used;
+		alignas(T) unsigned char mem[Stride * CountPerChunk];
 	};
 
 	size_t curr;
 	Chunk chunks[NumChunks];
-
-	inline void *&getNextPtr(void *ptr)
-	{
-		return *reinterpret_cast<void**>(ptr);
-	}
 
 	void dealloc(T* m, size_t i)
 	{
@@ -34,8 +25,6 @@ private:
 		Chunk &c = chunks[i];
 		i = (reinterpret_cast<unsigned char*>(m) - c.mem) / Stride;
 		c.used[i] = 0;
-		getNextPtr(m) = c.first;
-		c.first = m;
 	}
 
 	void compact_chunk(size_t i)
@@ -61,50 +50,21 @@ private:
 				--back;
 			}
 		}
-
-		++back;
-
-		unsigned char *off = c.mem + back * Stride;
-
-		c.first = off;
-
-		for(size_t j = back; j < CountPerChunk - 1; ++j)
-		{
-			*reinterpret_cast<void**>(off) = reinterpret_cast<void*>(off + Stride);
-			off += Stride;
-		}
-
-		getNextPtr(off) = nullptr;
 	}
 protected:
-	BlockAllocator() : curr(0)
-	{
-		for(size_t i = 0; i < NumChunks; ++i)
-		{
-			Chunk& c = chunks[i];
-			unsigned char *off = c.mem;
-			c.first = off;
-			for(size_t j = 0; j < CountPerChunk - 1; ++j)
-			{
-				*reinterpret_cast<void**>(off) = reinterpret_cast<void*>(off + Stride);
-				off += Stride;
-			}
-			getNextPtr(off) = nullptr;
-			c.used.reset();
-		}
-	}
+	BlockAllocator() : curr(0) {}
 
 	T* alloc()
 	{
 		for(size_t i = 0; i < NumChunks; ++i)
 		{
 			Chunk &c = chunks[curr];
-			std::cout << c.first << '\n';
-			if(c.first)
+			if(!c.used.all())
 			{
-				void *ret = c.first;
-				c.first = getNextPtr(c.first);
-				c.used[(static_cast<unsigned char*>(ret) - c.mem) / Stride] = 1;
+				size_t zero = 0;
+				while(c.used[zero]) ++zero;
+				c.used[zero] = 1;
+				void *ret = c.mem + zero * Stride;;
 				return static_cast<T*>(ret);
 			}
 			curr = (curr + 1) % NumChunks;

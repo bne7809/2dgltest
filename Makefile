@@ -1,6 +1,6 @@
 SRCS = $(wildcard ./src/*.cpp)
 OBJS = $(SRCS:./src%.cpp=./bin%.o)
-CFLAGS = -Wall -Wextra -Werror -g -O0
+CFLAGS = -Wall -Wextra -Werror
 NAME = 2dtest
 
 run: $(NAME)
@@ -9,7 +9,7 @@ run: $(NAME)
 all: $(NAME)
 
 ./bin/%.o: ./src/%.cpp | bin
-	clang++ -c $(CFLAGS) -fno-exceptions -std=c++20 -DGL_SILENCE_DEPRECATION -I ./include $< -o $@
+	clang++ -c $(CFLAGS) -fno-exceptions -fno-rtti -std=c++20 -DGL_SILENCE_DEPRECATION -I ./include $< -o $@
 
 ./bin/glad.o: ./src/glad.c
 	clang -c $(CFLAGS) $< -o $@

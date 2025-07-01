@@ -14,7 +14,7 @@ void main()
 
 	tmp.z = abs(tmp.z - xflip);
 
-	tex_coord = tmp.zw + tmp.zw;
+	tex_coord = tmp.zw + off.zw;
 
 	gl_Position = mod_mat * vec4(tmp.xy + off.xy, 0.0f, 1.0f);
 }
