@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <iostream>
 
 template <typename T, size_t CountPerChunk, size_t NumChunks>
 class BlockAllocator {
@@ -21,69 +22,59 @@ private:
 
 	size_t curr;
 	Chunk chunks[NumChunks];
-	std::bitset<NumChunks> should_comp;
 
 	inline void *&getNextPtr(void *ptr)
 	{
 		return *reinterpret_cast<void**>(ptr);
 	}
 
-	void dealloc(T* m)
+	void dealloc(T* m, size_t i)
 	{
-		size_t chunk_index = (reinterpret_cast<unsigned char*>(m) - chunks[0].mem) / BlockSize;
-		curr = chunk_index;
-		Chunk &c = chunks[chunk_index];
-		size_t i = (reinterpret_cast<unsigned char*>(m) - c.mem) / Stride;
+		curr = i;
+		Chunk &c = chunks[i];
+		i = (reinterpret_cast<unsigned char*>(m) - c.mem) / Stride;
 		c.used[i] = 0;
 		getNextPtr(m) = c.first;
 		c.first = m;
-		should_comp[chunk_index] = 1;
 	}
 
-	void compact()
+	void compact_chunk(size_t i)
 	{
-		if(should_comp.none())
-			return;
-		for(size_t i = 0; i < NumChunks; ++i)
+		Chunk &c = chunks[i];
+
+		size_t back = CountPerChunk - 1;
+
+		for(size_t front = 0; front < back; ++front)
 		{
-			if(should_comp[i])
+			if(!c.used[front])
 			{
-				Chunk &c = chunks[i];
+				while(back > front && !c.used[back])
+					--back;
 
-				size_t back = CountPerChunk - 1;
+				if(back <= front) break;
 
-				for(size_t front = 0; front < back; ++front)
-				{
-					if(!c.used[front])
-					{
-						while(back > front && !c.used[back])
-							--back;
+				std::memcpy(c.mem + front * Stride, c.mem + back * Stride, Stride);
 
-						if(back <= front) break;
+				c.used[front] = 1;
+				c.used[back] = 0;
 
-						std::memcpy(c.mem + front * Stride, c.mem + back * Stride, Stride);
-
-						c.used[front] = 1;
-						c.used[back] = 0;
-
-						--back;
-					}
-				}
-
-				++back;
-
-				unsigned char *off = c.mem + back * Stride;
-
-				c.first = off;
-
-				for(size_t j = back; j < CountPerChunk - 1; ++j)
-					*reinterpret_cast<void**>(off) = reinterpret_cast<void*>(off += Stride);
-
-				getNextPtr(off) = nullptr;
-
-				should_comp[i] = 0;
+				--back;
 			}
 		}
+
+		++back;
+
+		unsigned char *off = c.mem + back * Stride;
+
+		c.first = off;
+
+		for(size_t j = back; j < CountPerChunk - 1; ++j)
+		{
+			*reinterpret_cast<void**>(off) = reinterpret_cast<void*>(off + Stride);
+			off += Stride;
+		}
+
+		getNextPtr(off) = nullptr;
 	}
 protected:
 	BlockAllocator() : curr(0)
@@ -94,8 +85,12 @@ protected:
 			unsigned char *off = c.mem;
 			c.first = off;
 			for(size_t j = 0; j < CountPerChunk - 1; ++j)
-				*reinterpret_cast<void**>(off) = reinterpret_cast<void*>(off += Stride);
+			{
+				*reinterpret_cast<void**>(off) = reinterpret_cast<void*>(off + Stride);
+				off += Stride;
+			}
 			getNextPtr(off) = nullptr;
+			c.used.reset();
 		}
 	}
 
@@ -104,6 +99,7 @@ protected:
 		for(size_t i = 0; i < NumChunks; ++i)
 		{
 			Chunk &c = chunks[curr];
+			std::cout << c.first << '\n';
 			if(c.first)
 			{
 				void *ret = c.first;
@@ -124,15 +120,20 @@ protected:
 		{
 			Chunk &c = chunks[i];
 			size_t count = c.used.count();
+			bool comp = false;
 
 			for(size_t j = 0; j < count; ++j)
 			{
 				T& t = *reinterpret_cast<T*>(c.mem + j * Stride);
 				f(t);
 				if(k(t))
-					dealloc(&t);
+				{
+					comp = true;
+					dealloc(&t, i);
+				}
 			}
+
+			if(comp) compact_chunk(i);
 		}
-		compact();
 	}
 };

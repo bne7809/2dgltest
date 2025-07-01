@@ -2,7 +2,7 @@
 #include "utils.hpp"
 
 proj_pool::proj_pool(const char *file, int num_x, int num_y, int rwidth, int rheight)
-	: m_fracw(1.0f/num_x), m_frach(1.0f/num_y)
+	: num_inst(0), m_fracw(1.0f/num_x), m_frach(1.0f/num_y)
 {
 	util::tex_create(file, &m_tex);
 
@@ -31,6 +31,7 @@ proj_pool::proj_pool(const char *file, int num_x, int num_y, int rwidth, int rhe
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(inst_data) * CPC * NC, nullptr, GL_STREAM_DRAW);
 
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
@@ -39,8 +40,6 @@ proj_pool::proj_pool(const char *file, int num_x, int num_y, int rwidth, int rhe
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(4 * sizeof(float)));
 	glVertexAttribDivisor(2, 1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 }
@@ -91,12 +90,33 @@ void proj_pool::update(int dt, float df)
 					return true;
 				if(data.y < 0.0f || data.y >= 720.0f)
 					return true;
-				++i;
 
 				ptr[i].pos_tex = glm::vec4(data.x, data.y, data.frame * fracw, data.row * frach);
-				ptr[i].x_flip = (data.vx >= 0.0f) - (data.vx < 0.0f);
+				ptr[i].x_flip = fracw * (data.vx < 0.0f);
+
+				++i;
 
 				return false;
 			});
 	num_inst = i;
+}
+
+void proj_pool::render(shader& s)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo[1]);
+
+	void *ptr = glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(inst_data) * num_inst, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+
+	std::memcpy(ptr, inst, sizeof(inst_data) * num_inst);
+
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
+	glm::mat4 mod_mat = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+
+	s.set_mat4("mod_mat", glm::value_ptr(mod_mat));
+
+	glBindVertexArray(m_vao);
+	glBindTexture(GL_TEXTURE_2D, m_tex);
+
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, num_inst);
 }

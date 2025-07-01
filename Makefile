@@ -1,6 +1,6 @@
 SRCS = $(wildcard ./src/*.cpp)
 OBJS = $(SRCS:./src%.cpp=./bin%.o)
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -g -O0
 NAME = 2dtest
 
 run: $(NAME)

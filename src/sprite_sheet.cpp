@@ -30,7 +30,6 @@ sprite_sheet::sprite_sheet(const char *file, int num_x, int num_y, int rwidth, i
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 

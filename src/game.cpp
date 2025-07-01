@@ -7,6 +7,8 @@
 #include "anim_conv.hpp"
 #include "state_anim_conv.hpp"
 #include "transformers.hpp"
+#include "triggers.hpp"
+#include "proj_pool.hpp"
 
 const anim_data game::s_archer_data[] = 
 {
@@ -25,7 +27,7 @@ const anim_data game::s_knight_data[] =
 {
 	{0, 0, 8, 150000, 0, nullptr},
 	{0, 8, 10, 100000, 1, nullptr},
-	{1, 8, 6, 100000, -1, nullptr},
+	{1, 8, 6, 100000, -1, trigger::green_sword},
 	{2, 4, 6, 100000, 3, nullptr},
 	{3, 0, 8, 100000, 4, nullptr},
 	{3, 8, 3, 200000, -1, nullptr},
@@ -65,6 +67,7 @@ void game::start()
 	cmd_buff cmds;
 
 	shader anim_prog("shaders/anim_sprite.vs", "shaders/anim_sprite.fs");
+	shader proj_prog("shaders/proj.vs", "shaders/anim_sprite.fs");
 	
 	dyn_entity knight_info;
 	knight_info.state = 0;
@@ -83,6 +86,11 @@ void game::start()
 
 	anim_entity knight_anim(s_knight_data, 10);
 	sprite_sheet knight_sprite("res/HeroKnight.png", 10, 9, 160, 88);
+
+	proj_pool pool("res/proj_test.png", 8, 5, 80, 10);
+
+	trigger::g_links.add(&knight_anim, &knight_info);
+	trigger::g_links.add(&knight_anim, &pool);
 	
 	game_clock clk;
 
@@ -129,11 +137,16 @@ void game::start()
 
 		knight_info.x += knight_info.vx * clk.get_df();
 
+		pool.update(clk.get_dt(), clk.get_df());
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		anim_prog.bind();
 		int dir = !IS_BIT(knight_info.state, entity_state::X_DIR) - IS_BIT(knight_info.state, entity_state::X_DIR);
 		knight_sprite.render(anim_prog, knight_anim.get_row(), knight_anim.get_frame(), knight_info.x, knight_info.y, dir);
+
+		proj_prog.bind();
+		pool.render(proj_prog);
 
 		glfwSwapBuffers(m_window);
 	}
