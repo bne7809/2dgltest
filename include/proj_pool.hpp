@@ -21,7 +21,7 @@ struct proj_data
 };
 
 constexpr size_t CPC = 64;
-constexpr size_t NC = 8;
+constexpr size_t NC = 2;
 
 class proj_pool : public BlockAllocator<proj_data, CPC, NC>
 {
@@ -37,7 +37,6 @@ private:
 
 	static_assert(sizeof(inst_data) == 5 * sizeof(float));
 
-	inst_data inst[CPC * NC];
 	size_t num_inst;
 
 	GLuint m_tex;
@@ -52,4 +51,6 @@ public:
 	void create_proj(float x, float y, float vx, float vy, int row, int start, int end, int delay);
 	void update(int dt, float df);
 	void render(shader &s);
+
+	~proj_pool();
 };

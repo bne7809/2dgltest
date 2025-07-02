@@ -62,11 +62,14 @@ void proj_pool::create_proj(float x, float y, float vx, float vy, int row, int s
 
 void proj_pool::update(int dt, float df)
 {
-	inst_data *ptr = inst;
 	size_t i = 0;
 
 	const float fracw = m_fracw;
 	const float frach = m_frach;
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo[1]);
+
+	inst_data *ptr = static_cast<inst_data*>(glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(inst_data) * CPC * NC, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
 
 	update_del_if([dt, df](proj_data &data)
 			{
@@ -101,19 +104,14 @@ void proj_pool::update(int dt, float df)
 
 				return false;
 			});
+
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+
 	num_inst = i;
 }
 
 void proj_pool::render(shader& s)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo[1]);
-
-	void *ptr = glMapBufferRange(GL_ARRAY_BUFFER, 0, sizeof(inst_data) * num_inst, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-
-	std::memcpy(ptr, inst, sizeof(inst_data) * num_inst);
-
-	glUnmapBuffer(GL_ARRAY_BUFFER);
-
 	glm::mat4 mod_mat = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
 	s.set_mat4("mod_mat", glm::value_ptr(mod_mat));
@@ -122,4 +120,11 @@ void proj_pool::render(shader& s)
 	glBindTexture(GL_TEXTURE_2D, m_tex);
 
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, num_inst);
+}
+
+proj_pool::~proj_pool()
+{
+	glDeleteTextures(1, &m_tex);
+	glDeleteVertexArrays(1, &m_vao);
+	glDeleteBuffers(2, m_vbo);
 }
