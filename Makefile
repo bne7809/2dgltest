@@ -25,7 +25,7 @@ run: $(NAME)
 	clang++ -c $(CFLAGS) $(CPPFLAGS) $(CPPOPT) -std=c++20 -DGL_SILENCE_DEPRECATION -I ./include $< -o $@
 
 ./bin/glad.o: ./src/glad.c
-	clang -c $(CFLAGS) $< -o $@
+	clang -c $(CFLAGS) $(CPPOPT) $< -o $@
 
 $(NAME): ${OBJS} ./bin/glad.o
 	clang++ $(CPPOPT) -Wl,-dead_strip ${OBJS} ./bin/glad.o -lglfw.3 -framework OpenGL -o $(NAME) 
