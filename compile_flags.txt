@@ -1,0 +1,6 @@
+-I./include
+-Wall
+-Wextra
+-Werror
+-DGL_SILENCE_DEPRECATION
+-std=c++20

@@ -1,3 +1,6 @@
+#include <fstream>
+#include <sstream>
+#include <iostream>
 #include "shader.hpp"
 
 shader::shader(const char *vs_path, const char *fs_path)

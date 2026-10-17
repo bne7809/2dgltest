@@ -39,17 +39,33 @@ struct anim_data
 
 namespace entity_state
 {
-	constexpr unsigned int GROUNDED	= 0x0001;
-	constexpr unsigned int MV_RIGHT = 0x0002;
-	constexpr unsigned int MV_LEFT	= 0x0004;
-	constexpr unsigned int ILOCK	= 0x0008;
-	constexpr unsigned int JMP		= 0x0010;
-	constexpr unsigned int DBJUMP	= 0x0020;
-	constexpr unsigned int COLLX	= 0x0040;
-	constexpr unsigned int WLJMP	= 0x0080;
+	constexpr unsigned int MV_RIGHT = 0;
+	constexpr unsigned int MV_LEFT	= 1;
+	constexpr unsigned int X_DIR	= 2;
+	constexpr unsigned int ILOCK	= 3;
 }
 
-struct entity_hitbox
+struct entity_base
+{
+	unsigned int state;
+};
+
+struct entity_pos
+{
+	float x;
+	float y;
+};
+
+struct entity_trans
+{
+	float vx;
+	float vy;
+	float ax;
+	float ay;
+	float my;
+};
+
+struct entity_bound
 {
 	float off_x;
 	float off_y;
@@ -57,26 +73,15 @@ struct entity_hitbox
 	float h;
 };
 
-struct transform
+struct stat_entity : public entity_base, public entity_pos, public entity_bound
 {
-	float vel_x;
-	float vel_y;
-	float acc_x;
-	float acc_y;
-	int dir;
 };
 
-struct entity_info
+struct dyn_entity : public entity_base, public entity_pos, public entity_trans, public entity_bound
 {
-	float x;
-	float y;
-	float vel_x;
-	float vel_y;
-	float acc_x;
-	float acc_y;
-	float max_y;
-	int dir;
 	anim_type anim;
-	unsigned int state;
-	entity_hitbox hit;
 };
+
+#define BIT_ON(flag, pos)	((flag) |= (1 << (pos)))
+#define BIT_OFF(flag, pos)	((flag) &= ~(1 << (pos)))
+#define IS_BIT(flag, pos)	(((flag) >> (pos)) & 1)

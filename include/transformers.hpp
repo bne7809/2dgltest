@@ -4,5 +4,5 @@
 
 namespace trans
 {
-	bool archer(entity_info &out, entity_cmd curr_cmd);
+	bool knight(dyn_entity &out, entity_cmd curr_cmd);
 }

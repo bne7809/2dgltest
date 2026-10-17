@@ -1,8 +1,5 @@
 #pragma once
 
-#include "proj_pool.hpp"
-#include "entity_info.hpp"
-
 namespace trigger
 {
 	constexpr unsigned int F1VXF2VYI1RI2SI3EI4D_SEINF_FPRJCR = 0x0001;
@@ -29,17 +26,14 @@ namespace trigger
 	private:
 		static constexpr int NUM_LINKS = 10;
 
-		struct map
-		{
-			void *key;
-			void *val;
-		};
-
-		map m_mem[NUM_LINKS];
 		int m_size;
+
+		void *key[NUM_LINKS];
+		void *val[NUM_LINKS];
+
 	};
 
 	extern link_group g_links;
 
-	void pink_arrow(void *from);
+	void green_sword(void *from);
 }

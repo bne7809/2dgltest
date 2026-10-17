@@ -1,6 +1,6 @@
 #pragma once
 
-#include "collisions.hpp"
+#include "entity_info.hpp"
 
 class anim_entity
 {
